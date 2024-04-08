@@ -57,6 +57,37 @@ def printDebug(telemetry):
     throttle = telemetry[14]
     brake = telemetry[15]
     clutch = telemetry[16]
+
+    # -- DL_x - bits for dashLights and showLights
+    # local DL_SHIFT        = 2 ^ 0    -- shift light
+    # local DL_FULLBEAM     = 2 ^ 1    -- full beam
+    # local DL_HANDBRAKE    = 2 ^ 2    -- handbrake
+    # local DL_PITSPEED     = 2 ^ 3    -- pit speed limiter // N/A
+    # local DL_TC           = 2 ^ 4    -- tc active or switched off
+    # local DL_SIGNAL_L     = 2 ^ 5    -- left turn signal
+    # local DL_SIGNAL_R     = 2 ^ 6    -- right turn signal
+    # local DL_SIGNAL_ANY   = 2 ^ 7    -- shared turn signal // N/A
+    # local DL_OILWARN      = 2 ^ 8    -- oil pressure warning
+    # local DL_BATTERY      = 2 ^ 9    -- battery warning
+    # local DL_ABS          = 2 ^ 10   -- abs active or switched off
+    # local DL_SPARE        = 2 ^ 11   -- N/A
+    showLights = telemetry[13]
+    shiftLight = showLights & 1
+    highBeams = showLights & 2
+    handbrake = showLights & 4
+    tcs = showLights & 16
+    signalLeft = showLights & 32
+    signalRight = showLights & 64
+    oilWarn = showLights & 256
+    battWarn = showLights & 512
+    abs = showLights & 1024
+
+    if shiftLight:
+        print("SHIFT UP")
+    if tcs:
+        print("TCS active")
+    if handbrake:
+        print("Handbrake on")
     
     print("Gear: {:2d}   Boost: {:2.2f} PSI".format(gear, boostPSI))
     print("{:3.0f} MPH   {:5.0f} RPM".format(speedMPH, rpm))

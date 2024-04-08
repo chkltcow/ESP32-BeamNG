@@ -1,7 +1,5 @@
 import esp
-esp.osdebug(None)
 import gc
-gc.collect()
 import network
 import socket
 import struct
@@ -58,6 +56,19 @@ def printDebug(telemetry):
     brake = telemetry[15]
     clutch = telemetry[16]
 
+    # -- OG_x - bits for flags
+    # local OG_SHIFT = 1 - - key // N/A
+    # local OG_CTRL = 2 - - key // N/A
+    # local OG_TURBO = 8192 - - show turbo gauge
+    # local OG_KM = 16384 - - if not set - user prefers MILES
+    # local OG_BAR = 32768 - - if not set - user prefers PSI
+    prefFlags = telemetry[2]
+    gotBoost = bool(prefFlags & 8192)
+    useKM = bool(prefFlags & 16384)
+    useBar = bool(prefFlags & 32768)
+    # I believe the "OG_KM" and "OG"BAR" flags to be documented wrong.  I use Miles and PSI and both flags are set
+    # I'm leaving them named "useKM" and "useBar" to match the documentation, but in my testing it does the opposite
+
     # -- DL_x - bits for dashLights and showLights
     # local DL_SHIFT        = 2 ^ 0    -- shift light
     # local DL_FULLBEAM     = 2 ^ 1    -- full beam
@@ -88,11 +99,21 @@ def printDebug(telemetry):
         print("TCS active")
     if handbrake:
         print("Handbrake on")
-    
-    print("Gear: {:2d}   Boost: {:2.2f} PSI".format(gear, boostPSI))
-    print("{:3.0f} MPH   {:5.0f} RPM".format(speedMPH, rpm))
+
+    # See comment in Flags section.  This works for me (an American using PSI and MPH)
+    if useBar:
+        boost = boostPSI
+    else:
+        boost = boostBar
+
+    if useKM:
+        speed = speedMPH
+    else:
+        speed = speedKPH
+
+    print("Gear: {:2d}   Boost: {:2.2f} PSI".format(gear, boost))
+    print("{:3.0f} MPH   {:5.0f} RPM".format(speed, rpm))
     print("Temps - Water: {:3.1f}F    Oil: {:3.1f}F".format(waterTempF, oilTempF))
-    
 
 
 
